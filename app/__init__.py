@@ -3,11 +3,16 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask
 from flask_bootstrap import Bootstrap
+from config import Config
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
-# app.config['SECRET_KEY'] = 'you-will-never-guess'
-app.config['LOG_TO_STDOUT'] = os.environ.get('LOG_TO_STDOUT')
+app.config.from_object(Config)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 
 if not app.debug and not app.testing:
 	if app.config['LOG_TO_STDOUT']:
@@ -27,4 +32,4 @@ if not app.debug and not app.testing:
 		app.logger.setLevel(logging.INFO)
 		app.logger.info('Microblog startup')
 
-from app import routes
+from app import routes, models
