@@ -9,4 +9,81 @@
             <p>Welcome.</p>
         </div>
     </div>
+    <br>
+
+    <div class = "row">
+        <div class="col-md-7">
+            <h2>Chicago to Kraków Passenger Counts</h2>
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+    <br>
+    <hr>
+    <br>
+    <div class = "row">
+        <div class="col-md-7">
+        <h2>Raw Data</h2>
+        <table class="table">
+          	<thead>
+                <tr>
+                	<th scope="col">Airline</th>
+                	<th scope="col">Month</th>
+                	<th scope="col">Origin</th>
+                	<th scope="col">Dest</th>
+            		<th scope="col">Seats</th>
+            		<th scope="col">Passengers</th>
+                </tr>
+          	</thead>
+          	<tbody>
+              	{% for item in data %}
+                <tr>
+                	<td>{{ item[0] }}</td>
+                	<td>{{ item[1] }}</td>
+                	<td>{{ item[2] }}</td>
+                	<td>{{ item[3] }}</td>
+                	<td>{{ item[4] }}</td>
+                	<td>{{ item[5] }}</td>
+                </tr>
+            	{% endfor %}
+          </tbody>
+        </table>
+        </div>
+    </div>
+
+{% endblock %}
+
+{%block app_scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+        // The type of chart we want to create
+        type: 'line',
+
+    // The data for our dataset
+        data: {
+            labels: [{% for item in west_labels %}
+                  "{{ item[0] }}", //tuple handling
+              {% endfor %}],
+            datasets: [
+            {   label: "Westbound: KRK-ORD",
+                // backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [{% for item in west_values %}
+                      {{ item[0] }},
+                    {% endfor %}],
+            },{
+                label: "Eastbound: ORD-KRK",
+                // backgroundColor: 'cyan',
+                borderColor: 'blue',
+                data: [{% for item in east_values %}
+                      {{ item[0] }},
+                    {% endfor %}],
+            }]
+        },
+
+    // Configuration options go here
+        options: {}
+    });
+    </script>
 {% endblock %}
