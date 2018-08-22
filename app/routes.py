@@ -20,6 +20,10 @@ def chart():
 	east_values = Record.query.with_entities(Record.passengers).filter((Record.origin == "ORD"),(Record.dest == "KRK")).all() 
 	return render_template('chart.html', west_labels=west_labels, west_values=west_values, east_values=east_values)
 
+@app.route('/map')
+def map():
+	return render_template('map2.html')
+
 # @app.route('/data')
 # def data():
 # 	result = R.query.with_entities(R.unique_carrier, R.month, R.origin, R.dest, R.seats, R.passengers).filter((R.origin == "KRK")|(R.dest == "KRK")).order_by(R.origin).all()

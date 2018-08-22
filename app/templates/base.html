@@ -8,7 +8,9 @@ LOT Dashboard
 
 {% block styles %}
 {{ super() }}
+
 <link rel="stylesheet" href="{{url_for('static', filename='mystyle.css')}}">
+{%block app_styles %}{% endblock %}
 {% endblock %}
 
 
