@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{%block app_styles %}
+{% endblock %}
+
+{% block app_content %}
+<div class="row">
+    <div class="col-md-7">
+        <h2>About</h2>
+        <br>
+        <div id="markdownid">{{ text|markdown }}</div>
+    </div>
+</div>
+
+{% endblock %}	
+
+{%block app_scripts %}
+{% endblock %}
+

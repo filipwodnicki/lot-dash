@@ -13,6 +13,14 @@ def index():
 	east_values = Record.query.with_entities(Record.passengers).filter((Record.origin == "ORD"),(Record.dest == "KRK")).all() 
 	return render_template('index.html', data=result, west_labels=west_labels, west_values=west_values, east_values=east_values)
 
+content = ""
+with open("readme.md", "r") as f:
+	content = f.read()
+	
+@app.route('/about')
+def about():
+	return render_template('about.html', text=content)
+
 @app.route('/chart')
 def chart():
 	west_labels = Record.query.with_entities(Record.month).filter(Record.origin == "KRK").all()#returns tuple like: [(1,), (2,)]
