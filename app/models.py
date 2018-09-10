@@ -1,59 +1,56 @@
 from app import db
+from sqlalchemy.orm import relationship, aliased
 
-class User(db.Model):
-	id = db.Column(db.Integer, primary_key=True, unique=True)
-	name = db.Column(db.String(128))
 
-	def __repr__(self):
-		return '<User {}>'.format(self.name)
 
-class Record(db.Model):
-	__tablename__ = 'record'
+class Airport(db.Model):
+	__tablename__ = 'airport'
 	id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-	departures_scheduled = db.Column(db.Integer)
-	departures_performed = db.Column(db.Integer)
+	code = db.Column(db.String(6), unique=True) #primary key
+	city_name = db.Column(db.String(64))
+	country_code = db.Column(db.String(6))
+	country_name = db.Column(db.String(64))
+
+class Airline(db.Model):
+	__tablename__ = 'airline'
+	__table_args__ = (db.UniqueConstraint('carrier', 'carrier_name', name='uix_1'),)
+	id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	carrier = db.Column(db.String(6)) # get from unique
+	carrier_name = db.Column(db.String(128)) # get from unique
+
+	# records = relationship("BTS_Record", foreign_keys="BTS_Record.airline_id", back_populates="airline")
+	
+
+class BTS_Record(db.Model):
+	__tablename__ = 'bts_record'
+	# __table_args__ = (db.UniqueConstraint('airline_id', 'origin_id', 'dest_id', 'year', 'month', name='uix_2'),)
+	id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	origin_id = db.Column(db.Integer, db.ForeignKey('airport.id'))
+	dest_id = db.Column(db.Integer, db.ForeignKey('airport.id'))
+	airline_id = db.Column(db.Integer, db.ForeignKey('airline.id'))
+	year = db.Column(db.Integer)
+	quarter = db.Column(db.Integer)
+	month = db.Column(db.Integer)
+	departures = db.Column(db.Integer) #departures_performed
 	payload = db.Column(db.Integer)
 	seats = db.Column(db.Integer)
 	passengers = db.Column(db.Integer)
 	freight = db.Column(db.Integer)
-	mail = db.Column(db.Integer)
-	distance = db.Column(db.Integer)
-	ramp_to_ramp = db.Column(db.Integer)
-	air_time = db.Column(db.Integer)
-	unique_carrier = db.Column(db.String(6))
-	airline_id = db.Column(db.Integer)
-	unique_carrier_name = db.Column(db.String(128))
-	unique_carrier_entity = db.Column(db.String(16))
-	region = db.Column(db.String(3))
-	carrier = db.Column(db.String(6))
-	carrier_name = db.Column(db.String(128))
-	carrier_group = db.Column(db.String(3))
-	carrier_group_new = db.Column(db.String(3))
-	origin_airport_id = db.Column(db.Integer)
-	origin_airport_seq_id = db.Column(db.Integer)
-	origin_city_market_id = db.Column(db.Integer)
-	origin = db.Column(db.String(6))
-	origin_city_name = db.Column(db.String(64))
-	origin_country = db.Column(db.String(6))
-	origin_country_name = db.Column(db.String(64))
-	origin_wac = db.Column(db.Integer)
-	dest_airport_id = db.Column(db.Integer)
-	dest_airport_seq_id = db.Column(db.Integer)
-	dest_city_market_id = db.Column(db.Integer)
-	dest = db.Column(db.String(6))
-	dest_city_name = db.Column(db.String(64))
-	dest_country = db.Column(db.String(6))
-	dest_country_name = db.Column(db.String(64))
-	dest_wac = db.Column(db.Integer)
-	aircraft_group = db.Column(db.Integer)
-	aircraft_type = db.Column(db.Integer)
-	aircraft_config = db.Column(db.Integer)
-	year = db.Column(db.Integer)
-	quarter = db.Column(db.Integer)
-	month = db.Column(db.Integer)
-	distance_group = db.Column(db.Integer)
-	CLASS = db.Column(db.String(6))
 
-	def __repr__(self):
-		return '<Record {}: {}-{} {}/{} Seats:{} PAX:{}>'.format(self.unique_carrier, self.origin, self.dest, self.month, self.year, self.seats, self.passengers)
+	airline = relationship("Airline", foreign_keys=[airline_id])
+	origin = relationship("Airport", foreign_keys=[origin_id])
+	dest = relationship("Airport", foreign_keys=[dest_id])
 
+Origin = aliased(Airport)
+Destination = aliased(Airport)	
+
+	# class Parent(Base):
+	#     __tablename__ = 'parent'
+	#     id = Column(Integer, primary_key=True)
+	#     children = relationship("Child", back_populates="parent")
+
+	# class Child(Base):
+	#     __tablename__ = 'child'
+	#     id = Column(Integer, primary_key=True)
+	#     parent_id = Column(Integer, ForeignKey('parent.id'))
+	#     parent = relationship("Parent", back_populates="children")

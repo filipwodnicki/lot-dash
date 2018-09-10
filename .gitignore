@@ -21,3 +21,8 @@ __pycache__
 
 # folders
 logs/
+.db
+db
+.idea
+.ipynb
+.ipynb_checkpoints
