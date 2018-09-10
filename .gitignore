@@ -22,7 +22,7 @@ __pycache__
 # folders
 logs/
 .db
-/db
+db/
 .idea
 .ipynb
 .ipynb_checkpoints
