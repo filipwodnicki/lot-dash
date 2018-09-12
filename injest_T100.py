@@ -31,7 +31,7 @@ with open('/Users/Filip/code/python/lot-dash/db/2017_all.csv', newline='') as cs
         # save it
         query = session.query(Airline).filter_by(carrier=unique_carrier, carrier_name=unique_carrier_name).first()
         if query is not None:
-            print( query.id )
+            # print( query.id )
             this_airline_id = query.id
         else:
             new_airline = Airline(carrier=unique_carrier, carrier_name=unique_carrier_name)

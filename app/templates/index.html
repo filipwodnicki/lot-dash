@@ -13,17 +13,29 @@ LOT Polish Airlines Dashboard
 {% block app_content %}
 	<div class="row">
         <div class="col-md-7">
-            <h1>LOT Polish Airlines Dashboard</h1>
-            <br>
-            <p>Welcome.</p>
+            <h1>Route Dashboard</h1>
         </div>
     </div>
-    <br>
-
+    {% if form %}
     <div class="row">
+        <div class="col-md-7">
+            <form class="form" action="/routes" method="post" id="route">
+                {{ wtf.form_errors(form) }}
+                {{ wtf.form_field(form.airline) }}
+                {{ wtf.form_field(form.origin) }}
+                {{ wtf.form_field(form.destination) }}
+                {{ wtf.form_field(form.year) }}
+                {{ wtf.form_field(form.submit) }}
+                {{ form.hidden_tag() }}
+            </form>
+        </div>
+    </div>
+    {% endif %}
 
+    {% if data %}
+    <div class="row">
         <div class="col-md-6">
-            <h2>Chicago to Kraków Passenger Counts</h2>
+            <h2>{{origin_city_name}} to {{destination_city_name}} Passenger Counts</h2>
             <canvas id="myChart"></canvas>
         </div>
 
@@ -67,10 +79,99 @@ LOT Polish Airlines Dashboard
         </table>
         </div>
     </div>
+    {% endif %}
 
 {% endblock %}
 
 {%block app_scripts %}
+<script>
+
+let airline_select = document.getElementById('airline');
+let origin_select = document.getElementById('origin');
+let destination_select = document.getElementById('destination');
+let year_select = document.getElementById('year');
+
+window.onload = function() {
+    
+    // alert('it worked');
+    fetch('/airline').then(function(response){
+        response.json().then(function(data){
+            console.log(data)
+            let optionHTML = '';
+            // alert(data.airlines[0].id)
+            for (let airline of data.airlines){
+                optionHTML += '<option value="' + airline.id+'">' + airline.carrier_name +' (' + airline.carrier + ')</option>';
+            }
+        airline_select.innerHTML = optionHTML;
+        airline_select.onchange();
+        });
+    });
+}
+
+airline_select.onchange = function(){
+    origin_select.innerHTML = '';
+    destination_select.innerHTML = '';
+    year_select.innerHTML = '';
+
+    airline = airline_select.value;
+    
+    fetch('/airline/' + airline).then(function(response){
+        response.json().then(function(data){
+            console.log(data)
+            let optionHTML = '';
+            for (let origin of data.origins){
+                optionHTML += '<option value="' + origin.id +'">' + origin.city_name +' (' + origin.code + ')</option>';
+            }
+        origin_select.innerHTML = optionHTML;
+        origin_select.onchange();
+        });
+    });
+}
+
+origin_select.onchange = function() {
+    // Reset lower values
+    destination_select.innerHTML = '';
+    year_select.innerHTML = '';
+
+    airline = airline_select.value;
+    origin = origin_select.value;
+
+    fetch('/airline/' + airline + '/' + origin).then(function(response){
+        response.json().then(function(data){
+            console.log(data)
+            let optionHTML = '';
+            for (let destination of data.destinations){
+                optionHTML += '<option value="' + destination.id +'">' + destination.city_name +' (' + destination.code + ')</option>';
+            }
+        destination_select.innerHTML = optionHTML;
+        destination_select.onchange();
+        });
+    });
+}
+
+destination_select.onchange = function() {
+    year_select.innerHTML = '';
+
+    airline = airline_select.value;
+    origin = origin_select.value;
+    destination = destination_select.value;
+
+    fetch('/airline/' + airline + '/' + origin + '/' + destination).then(function(response){
+        response.json().then(function(data){
+            console.log(data)
+            let optionHTML = '';
+            for (let year of data.years){
+                optionHTML += '<option value="' + year.year +'">' + year.year + '</option>';
+            }
+        year_select.innerHTML = optionHTML;
+        year = year_select.value;
+        // alert("airline: " + airline + " origin: " + origin + " destination: " + destination + " year: " + year);
+        });
+    });
+
+}
+
+</script>
     <script>
 
     var mymap = L.map('mapid').setView([54.571309, -22.850261], 2);
@@ -120,14 +221,14 @@ LOT Polish Airlines Dashboard
                   "{{ item[0] }}", //tuple handling
               {% endfor %}],
             datasets: [
-            {   label: "Westbound: KRK-ORD",
+            {   label: "{{origin_city_code}}-{{destination_city_code}}",
                 // backgroundColor: 'rgb(255, 99, 132)',
                 borderColor: 'rgb(255, 99, 132)',
                 data: [{% for item in west_values %}
                       {{ item[0] }},
                     {% endfor %}],
             },{
-                label: "Eastbound: ORD-KRK",
+                label: "{{destination_city_code}}-{{origin_city_code}}",
                 // backgroundColor: 'cyan',
                 borderColor: 'blue',
                 data: [{% for item in east_values %}

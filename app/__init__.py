@@ -15,6 +15,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 misaka = Misaka(app)
 
+app.config['SECRET_KEY'] = 'you-will-never-guess'
+
 
 if not app.debug and not app.testing:
 	if app.config['LOG_TO_STDOUT']:
