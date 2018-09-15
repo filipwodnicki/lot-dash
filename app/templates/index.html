@@ -221,25 +221,37 @@ destination_select.onchange = function() {
         var ctx = document.getElementById('myChart').getContext('2d');
         var chart = new Chart(ctx, {
         // The type of chart we want to create
-        type: 'line',
 
     // The data for our dataset
+        type: 'bar',
         data: {
-            labels: [{% for item in west_labels %}
+            labels: [{% for item in months %}
                   "{{ item[0] }}", //tuple handling
               {% endfor %}],
-            datasets: [
-            {   label: "{{origin_city_code}}-{{destination_city_code}}",
+            datasets: [{
+                type: 'bar',
+                label: "Seats",
                 // backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: [{% for item in west_values %}
+                borderColor: 'gray',
+                data: [{% for item in seats %}
                       {{ item[0] }},
                     {% endfor %}],
             },{
+                type: 'line',
+                label: "{{origin_city_code}}-{{destination_city_code}}",
+                // backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                fill: false,
+                data: [{% for item in pax %}
+                      {{ item[0] }},
+                    {% endfor %}],
+            },{
+                type: 'line',
                 label: "{{destination_city_code}}-{{origin_city_code}}",
                 // backgroundColor: 'cyan',
                 borderColor: 'blue',
-                data: [{% for item in east_values %}
+                fill: false,
+                data: [{% for item in paxreverse %}
                       {{ item[0] }},
                     {% endfor %}],
             }]

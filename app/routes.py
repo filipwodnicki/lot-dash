@@ -67,7 +67,7 @@ def routes():
 						.all()
 
 		# Get the relevant months
-		west_labels = R.query\
+		months = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
 						.with_entities(R.month)\
@@ -75,7 +75,7 @@ def routes():
 						.order_by(R.month).all()
 		
 		# Get the ORD-KRK passenger values
-		west_values = R.query\
+		pax = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
 						.with_entities(func.sum(R.passengers))\
@@ -83,14 +83,23 @@ def routes():
 						.order_by(R.month).all()
 		
 		# Get the KRK-ORD Passenger values
-		east_values = R.query\
+		paxreverse = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == destination_id),(R.dest_id == origin_id)) )\
 						.with_entities(func.sum(R.passengers))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
+
+		seats = R.query\
+						.filter(R.airline_id == airline_id)\
+						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
+						.with_entities(func.sum(R.seats))\
+						.group_by(R.month)\
+						.order_by(R.month).all()
+
+
 		return render_template('index.html', form=form,\
-					 data=table_data, west_labels=west_labels, west_values=west_values, east_values=east_values,\
+					 data=table_data, months=months, pax=pax, paxreverse=paxreverse, seats=seats,\
 					 airline_name=airline_name, airline_code=airline_code, origin_city_name=origin_city_name, \
 					 origin_city_code=origin_city_code, destination_city_name=destination_city_name, destination_city_code=destination_city_code,\
 					 origin_lat = origin_lat, origin_lng=origin_lng, destination_lat=destination_lat, destination_lng=destination_lng)
@@ -98,7 +107,15 @@ def routes():
 
 @app.route('/airline')
 def route_airlines():
-	airlines = Airline.query.order_by(Airline.carrier_name).all()
+	# airlines = Airline.query.order_by(Airline.carrier_name).all()
+	airlines = R.query\
+				.filter(R.passengers >= 1)\
+				.filter(R.departures >=4)\
+				.group_by(R.airline_id)\
+				.join(Airline, R.airline)\
+				.add_columns(Airline.id, Airline.carrier, Airline.carrier_name)\
+				.order_by(Airline.carrier_name)\
+				.all()
 	airlineArray = []
 
 	for airline in airlines:
