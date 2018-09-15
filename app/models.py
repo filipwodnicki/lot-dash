@@ -10,6 +10,15 @@ class Airport(db.Model):
 	city_name = db.Column(db.String(64))
 	country_code = db.Column(db.String(6))
 	country_name = db.Column(db.String(64))
+	geo = relationship("AirportGEO", uselist=False, back_populates="airport")
+
+class AirportGEO(db.Model):
+	__tablename__ = 'airportgeo'
+	id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	airport_id = db.Column(db.Integer, db.ForeignKey('airport.id'))
+	airport = relationship("Airport", back_populates="geo")
+	lat = db.Column(db.Numeric)
+	lng = db.Column(db.Numeric)
 
 class Airline(db.Model):
 	__tablename__ = 'airline'
@@ -37,12 +46,16 @@ class BTS_Record(db.Model):
 	passengers = db.Column(db.Integer)
 	freight = db.Column(db.Integer)
 
+	def loadfactor(self):
+		return (float(self.passengers) / float(self.seats))
+
 	airline = relationship("Airline", foreign_keys=[airline_id])
 	origin = relationship("Airport", foreign_keys=[origin_id])
 	dest = relationship("Airport", foreign_keys=[dest_id])
 
 Origin = aliased(Airport)
-Destination = aliased(Airport)	
+Destination = aliased(Airport)
+
 
 	# class Parent(Base):
 	#     __tablename__ = 'parent'

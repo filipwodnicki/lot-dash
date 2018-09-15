@@ -18,7 +18,7 @@ LOT Polish Airlines Dashboard
     </div>
     {% if form %}
     <div class="row">
-        <div class="col-md-7">
+        <div class="col-md-4">
             <form class="form" action="/routes" method="post" id="route">
                 {{ wtf.form_errors(form) }}
                 {{ wtf.form_field(form.airline) }}
@@ -60,8 +60,10 @@ LOT Polish Airlines Dashboard
                 	<th scope="col">Month</th>
                 	<th scope="col">Origin</th>
                 	<th scope="col">Dest</th>
+                    <th scope="col">Departures</th>
             		<th scope="col">Seats</th>
             		<th scope="col">Passengers</th>
+                    <th scope="col">Load Factor (%)</th>
                 </tr>
           	</thead>
           	<tbody>
@@ -73,6 +75,12 @@ LOT Polish Airlines Dashboard
                 	<td>{{ item[3] }}</td>
                 	<td>{{ item[4] }}</td>
                 	<td>{{ item[5] }}</td>
+                    <td>{{ item[6] }}</td>
+                    {% if item[7] %}
+                    <td>{{ '%0.1f%%' % (item[7]*100|float) }}</td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
                 </tr>
             	{% endfor %}
           </tbody>
@@ -184,15 +192,15 @@ destination_select.onchange = function() {
         id: 'mapbox.streets'
     }).addTo(mymap);
 
-    L.marker([50.077778, 19.784722]).addTo(mymap)
+    L.marker([{{origin_lat}}, {{origin_lng}}]).addTo(mymap)
         .bindPopup("<b>KRK</b><br />Kraków Airport.");
 
-    L.marker([41.978611, -87.904722]).addTo(mymap)
+    L.marker([{{destination_lat}}, {{destination_lng}}]).addTo(mymap)
         .bindPopup("<b>ORD</b><br />Chicago O'Hare");
 
     L.polygon([
-        [50.077778, 19.784722],
-        [41.978611, -87.904722]
+        [{{origin_lat}}, {{origin_lng}}],
+        [{{destination_lat}}, {{destination_lng}}]
     ]).addTo(mymap).bindPopup("I am KRK-ORD");
 
 

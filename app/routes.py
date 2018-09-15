@@ -1,9 +1,8 @@
 from flask import render_template, jsonify, request
 from app import app
-from app.models import Airline, Airport, Origin, Destination, BTS_Record as R
+from app.models import Airline, Airport, AirportGEO, Origin, Destination, BTS_Record as R
 from app.forms import RouteForm
-from sqlalchemy import or_, and_
-from sqlalchemy import func
+from sqlalchemy import or_, and_, func, cast, Float
 
 content = ""
 with open("README.md", "r") as f:
@@ -47,6 +46,14 @@ def routes():
 		destination_city_name = destination.city_name
 		destination_city_code = destination.code
 
+		origin_geo = AirportGEO.query.filter(AirportGEO.airport_id == origin_id).first()
+		destination_geo = AirportGEO.query.filter(AirportGEO.airport_id == destination_id).first()
+
+		origin_lat = origin_geo.lat
+		origin_lng = origin_geo.lng
+		destination_lat = destination_geo.lat
+		destination_lng = destination_geo.lng
+
 		table_data = R.query\
 						.filter(R.year == year)\
 						.filter(R.airline_id == airline_id)\
@@ -54,8 +61,8 @@ def routes():
 						.join(Origin, R.origin)\
 						.join(Destination, R.dest)\
 						.join(Airline, R.airline)\
-						.with_entities(Airline.carrier, R.month, Origin.code, Destination.code, func.sum(R.seats), func.sum(R.passengers) )\
 						.group_by(R.origin_id, R.month)\
+						.with_entities(Airline.carrier, R.month, Origin.code, Destination.code, func.sum(R.departures), func.sum(R.seats), func.sum(R.passengers), func.sum(cast(R.passengers, Float())) / func.sum(cast(R.seats, Float())))\
 						.order_by(R.origin_id, R.month)\
 						.all()
 
@@ -85,7 +92,8 @@ def routes():
 		return render_template('index.html', form=form,\
 					 data=table_data, west_labels=west_labels, west_values=west_values, east_values=east_values,\
 					 airline_name=airline_name, airline_code=airline_code, origin_city_name=origin_city_name, \
-					 origin_city_code=origin_city_code, destination_city_name=destination_city_name, destination_city_code=destination_city_code)
+					 origin_city_code=origin_city_code, destination_city_name=destination_city_name, destination_city_code=destination_city_code,\
+					 origin_lat = origin_lat, origin_lng=origin_lng, destination_lat=destination_lat, destination_lng=destination_lng)
 	return render_template('index.html', form=form)
 
 @app.route('/airline')
@@ -107,6 +115,8 @@ def route_airline_origins(airline):
 
 	records = R.query\
 				.filter_by(airline_id = airline)\
+				.filter(R.departures > 1)\
+				.filter(R.passengers > 1)\
 				.join(Origin, R.origin)\
 				.group_by(Origin.id)\
 				.order_by(Origin.city_name)\
