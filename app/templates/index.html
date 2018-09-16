@@ -7,7 +7,6 @@ LOT Polish Airlines Dashboard
 
 {% block app_styles %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js" integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA==" crossorigin=""></script>
 {% endblock %}
 
 {% block app_content %}
@@ -53,7 +52,7 @@ LOT Polish Airlines Dashboard
     <div class = "row">
         <div class="col-md-8">
         <h2>Raw Data</h2>
-        <table class="table">
+        <table class="table table-striped" id="datatable">
           	<thead>
                 <tr>
                 	<th scope="col">Airline</th>
@@ -92,6 +91,13 @@ LOT Polish Airlines Dashboard
 {% endblock %}
 
 {%block app_scripts %}
+<script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js" integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA==" crossorigin=""></script>
+<script src="{{ url_for('static', filename='Leaflet.Geodesic.js') }}"></script>
+<script>
+$(document).ready( function () {
+    $('#datatable').DataTable();
+} );
+</script>
 <script>
 
 let airline_select = document.getElementById('airline');
@@ -179,18 +185,31 @@ destination_select.onchange = function() {
 
 }
 
-</script>
+    </script>
     <script>
 
-    var mymap = L.map('mapid').setView([54.571309, -22.850261], 2);
+    // center = L.polygon([
+    //     [{{origin_lat}}, {{origin_lng}}],
+    //     [{{destination_lat}}, {{destination_lng}}]
+    // ]).getCenter();
+
+    // var mymap = L.map('mapid').setView(center, 2);
+    // var mymap = L.map('mapid').setView([54.571309, -22.850261], 2);
+    var mymap = L.map('mapid');
+
+        // mymap.setView(center, 2);
+    // mymap.setView([54.571309, -22.850261], 2);
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
         maxZoom: 18,
+        noWrap: false,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets'
     }).addTo(mymap);
+
+    
 
     L.marker([{{origin_lat}}, {{origin_lng}}]).addTo(mymap)
         .bindPopup("<b>KRK</b><br />Kraków Airport.");
@@ -198,10 +217,39 @@ destination_select.onchange = function() {
     L.marker([{{destination_lat}}, {{destination_lng}}]).addTo(mymap)
         .bindPopup("<b>ORD</b><br />Chicago O'Hare");
 
-    L.polygon([
-        [{{origin_lat}}, {{origin_lng}}],
-        [{{destination_lat}}, {{destination_lng}}]
-    ]).addTo(mymap).bindPopup("I am KRK-ORD");
+    // L.polygon([
+    //     [{{origin_lat}}, {{origin_lng}}],
+    //     [{{destination_lat}}, {{destination_lng}}]
+    // ]).addTo(mymap).bindPopup("I am KRK-ORD");
+
+    var origin_point = new L.LatLng({{origin_lat}}, {{origin_lng}});
+    var dest_point = new L.LatLng({{destination_lat}}, {{destination_lng}});
+
+    var Geodesic = L.geodesic([], {
+        weight: 7,
+        opacity: 0.5,
+        color: 'blue',
+        steps: 50
+    }).addTo(mymap); 
+
+    Geodesic.setLatLngs([[origin_point, dest_point]]);
+
+    // mymap.fitBounds(Geodesic.getBounds().pad(0.3));
+    mymap.fitBounds(Geodesic.getBounds(), { minZoom : 5 });
+
+
+    // alert( Geodesic.getCenter() );
+
+    // var Geodesic = L.geodesic(
+    //     [[{{origin_lat}}, {{origin_lng}}],
+    //     [{{destination_lat}}, {{destination_lng}}]],{
+    //     weight: 7,
+    //     opacity: 0.5,
+    //     color: 'blue',
+    //     steps: 50
+    // }).addTo(map); 
+
+    // Geodesic.setLatLngs([[origin_point, dest_point]]);
 
 
     // var popup = L.popup();
