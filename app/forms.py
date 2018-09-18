@@ -6,4 +6,4 @@ class RouteForm(FlaskForm):
 	origin = SelectField('Origin', choices=[])
 	destination = SelectField('Destination', choices=[])
 	year = SelectField('Year', choices=[])
-	submit = SubmitField('Submit')
+	submit = SubmitField('Explore')

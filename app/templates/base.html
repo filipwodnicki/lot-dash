@@ -9,9 +9,9 @@ LOT Dashboard
 {% block styles %}
 {{ super() }}
 
-<link rel="stylesheet" href="{{url_for('static', filename='mystyle.css')}}">
-
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+<link rel="stylesheet" href="{{url_for('static', filename='mystyle.css')}}">
 
 {%block app_styles %}{% endblock %}
 {% endblock %}

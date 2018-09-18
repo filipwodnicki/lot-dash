@@ -26,7 +26,8 @@ def chart():
 def map():
 	return render_template('map2.html')
 
-@app.route('/routes', methods = ['GET', 'POST'])
+@app.route('/', methods = ['GET', 'POST'])
+@app.route('/index', methods = ['GET', 'POST'])
 def routes():
 	form = RouteForm()
 	if request.method == 'POST':
@@ -97,12 +98,50 @@ def routes():
 						.group_by(R.month)\
 						.order_by(R.month).all()
 
+		seatsreverse = R.query\
+						.filter(R.airline_id == airline_id)\
+						.filter( and_((R.origin_id == destination_id),(R.dest_id == origin_id)) )\
+						.with_entities(func.sum(R.seats))\
+						.group_by(R.month)\
+						.order_by(R.month).all()
+
+		flights = R.query\
+						.filter(R.airline_id == airline_id)\
+						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
+						.with_entities(func.sum(R.departures))\
+						.group_by(R.month)\
+						.order_by(R.month).all()
+
+		flightsreverse = R.query\
+						.filter(R.airline_id == airline_id)\
+						.filter( and_((R.origin_id == destination_id),(R.dest_id == origin_id)) )\
+						.with_entities(func.sum(R.departures))\
+						.group_by(R.month)\
+						.order_by(R.month).all()
+
+
+		stats = {}
+
+		yearly_pax = sum(i for i, in pax + paxreverse)
+		stats['yearly_pax'] = "{:,.0f}".format(yearly_pax)
+		yearly_seats = sum(i for i, in seats + seatsreverse)
+		stats['yearly_seats'] = "{:,.0f}".format(yearly_seats)
+		stats['yearly_lf'] = "{0:.1%}".format(float(yearly_pax) / float(yearly_seats))
+		yearly_flights = sum(i for i, in flights + flightsreverse)
+		stats['yearly_flights'] = "{:,.0f}".format(yearly_flights)
+		stats['seats_per_flight'] = "{0:.1f}".format(float(yearly_seats) / float(yearly_flights))
+		stats['passengers_per_flight'] = "{0:.1f}".format(float(yearly_pax) / float(yearly_flights))
+
+		# yearly_us_arrivals = 
+		# yearly_us_departures =
+
 
 		return render_template('index.html', form=form,\
 					 data=table_data, months=months, pax=pax, paxreverse=paxreverse, seats=seats,\
 					 airline_name=airline_name, airline_code=airline_code, origin_city_name=origin_city_name, \
 					 origin_city_code=origin_city_code, destination_city_name=destination_city_name, destination_city_code=destination_city_code,\
-					 origin_lat = origin_lat, origin_lng=origin_lng, destination_lat=destination_lat, destination_lng=destination_lng)
+					 origin_lat = origin_lat, origin_lng=origin_lng, destination_lat=destination_lat, destination_lng=destination_lng,\
+					 stats=stats)
 	return render_template('index.html', form=form)
 
 @app.route('/airline')
