@@ -19,15 +19,18 @@ class Config(object):
 
 # Heroku deployment
 class ProductionConfig(Config):
+    DEVELOPMENT = False
     DEBUG = False
+    TESTING = False
+    LOG_TO_STDOUT = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
 
-# Staging to Postgres locally
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
 
-
+# Local postgres
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True

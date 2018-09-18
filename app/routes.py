@@ -12,23 +12,9 @@ with open("README.md", "r") as f:
 def about():
 	return render_template('about.html', text=content)
 
-@app.route('/chart')
-def chart():
-	# Get the relevant months
-	west_labels = R.query.join(Origin, R.origin).join(Destination, R.dest).filter( and_((Origin.code == "ORD"),(Destination.code == "KRK")) ).with_entities(R.month).order_by(R.month).all()
-	# Get the ORD-KRK passenger values
-	west_values = R.query.join(Origin, R.origin).join(Destination, R.dest).filter( and_((Origin.code == "ORD"),(Destination.code == "KRK")) ).with_entities(R.passengers).order_by(R.month).all()
-	# Get the KRK-ORD Passenger values
-	east_values = R.query.join(Origin, R.origin).join(Destination, R.dest).filter( and_((Origin.code == "KRK"),(Destination.code == "ORD")) ).with_entities(R.passengers).order_by(R.month).all()
-	return render_template('chart.html', west_labels=west_labels, west_values=west_values, east_values=east_values)
-
-@app.route('/map')
-def map():
-	return render_template('map2.html')
-
 @app.route('/', methods = ['GET', 'POST'])
-@app.route('/index', methods = ['GET', 'POST'])
-def routes():
+@app.route('/index')
+def index():
 	form = RouteForm()
 	if request.method == 'POST':
 		airline_id = form.airline.data
@@ -155,7 +141,7 @@ def routes():
 		# yearly_us_departures =
 
 
-		return render_template('index.html', form=form,\
+		return render_template('index.html', scroll="content", form=form,\
 					 data=table_data, months=months, pax=pax, paxreverse=paxreverse, seats=seats,\
 					 airline_name=airline_name, airline_code=airline_code, origin_city_name=origin_city_name, \
 					 origin_city_code=origin_city_code, destination_city_name=destination_city_name, destination_city_code=destination_city_code,\

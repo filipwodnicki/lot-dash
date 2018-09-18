@@ -19,7 +19,7 @@ lib
 lib64
 __pycache__
 
-‘injest_T100.py’
+injest_T100.py
 
 # folders
 logs/
@@ -27,5 +27,5 @@ logs/
 db/
 dev/
 .idea
-.ipynb
-.ipynb_checkpoints
+ipynb
+ipynb_checkpoints
