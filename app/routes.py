@@ -55,22 +55,35 @@ def routes():
 		destination_lat = destination_geo.lat
 		destination_lng = destination_geo.lng
 
+		# table_data = R.query\
+		# 				.filter(R.year == year)\
+		# 				.filter(R.airline_id == airline_id)\
+		# 				.filter( or_( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) , and_((R.origin_id == destination_id),(R.dest_id == origin_id)) ) )\
+		# 				.join(Origin, R.origin)\
+		# 				.join(Destination, R.dest)\
+		# 				.join(Airline, R.airline)\
+		# 				.with_entities(Airline.carrier, R.month, Origin.code, Destination.code, func.sum(R.departures), func.sum(R.seats), func.sum(R.passengers), func.sum(cast(R.passengers, Float())) / func.sum(cast(R.seats, Float())))\
+		# 				.group_by(R.origin_id, R.month)\
+		# 				.order_by(R.origin_id, R.month)\
+		# 				.all()
+
 		table_data = R.query\
+						.with_entities(Origin.code, Destination.code, Airline.carrier, R.month, func.sum(R.departures), func.sum(R.seats), func.sum(R.passengers), func.sum(cast(R.passengers, Float())) / func.sum(cast(R.seats, Float())))\
 						.filter(R.year == year)\
 						.filter(R.airline_id == airline_id)\
 						.filter( or_( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) , and_((R.origin_id == destination_id),(R.dest_id == origin_id)) ) )\
 						.join(Origin, R.origin)\
 						.join(Destination, R.dest)\
 						.join(Airline, R.airline)\
-						.group_by(R.origin_id, R.month)\
-						.with_entities(Airline.carrier, R.month, Origin.code, Destination.code, func.sum(R.departures), func.sum(R.seats), func.sum(R.passengers), func.sum(cast(R.passengers, Float())) / func.sum(cast(R.seats, Float())))\
-						.order_by(R.origin_id, R.month)\
+						.group_by(Origin.code, Destination.code, Airline.carrier, R.month)\
+						.order_by(R.month, Origin.code)\
 						.all()
 
 		# Get the relevant months
 		months = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
+						.filter(R.year == year)\
 						.with_entities(R.month)\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -79,6 +92,7 @@ def routes():
 		pax = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
+						.filter(R.year == year)\
 						.with_entities(func.sum(R.passengers))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -87,6 +101,7 @@ def routes():
 		paxreverse = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == destination_id),(R.dest_id == origin_id)) )\
+						.filter(R.year == year)\
 						.with_entities(func.sum(R.passengers))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -94,6 +109,7 @@ def routes():
 		seats = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
+						.filter(R.year == year)\
 						.with_entities(func.sum(R.seats))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -101,6 +117,7 @@ def routes():
 		seatsreverse = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == destination_id),(R.dest_id == origin_id)) )\
+						.filter(R.year == year)\
 						.with_entities(func.sum(R.seats))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -108,6 +125,7 @@ def routes():
 		flights = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == origin_id),(R.dest_id == destination_id)) )\
+						.filter(R.year == year)\
 						.with_entities(func.sum(R.departures))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -115,6 +133,7 @@ def routes():
 		flightsreverse = R.query\
 						.filter(R.airline_id == airline_id)\
 						.filter( and_((R.origin_id == destination_id),(R.dest_id == origin_id)) )\
+						.filter(R.year == year)\
 						.with_entities(func.sum(R.departures))\
 						.group_by(R.month)\
 						.order_by(R.month).all()
@@ -146,15 +165,19 @@ def routes():
 
 @app.route('/airline')
 def route_airlines():
-	# airlines = Airline.query.order_by(Airline.carrier_name).all()
-	airlines = R.query\
-				.filter(R.passengers >= 1)\
-				.filter(R.departures >=4)\
-				.group_by(R.airline_id)\
-				.join(Airline, R.airline)\
-				.add_columns(Airline.id, Airline.carrier, Airline.carrier_name)\
-				.order_by(Airline.carrier_name)\
-				.all()
+	
+	# SQLite syntax
+	# airlines = R.query\
+	# 			.filter(R.passengers >= 1)\
+	# 			.filter(R.departures >=4)\
+	# 			.group_by(R.airline_id)\
+	# 			.join(Airline, R.airline)\
+	# 			.add_columns(Airline.id, Airline.carrier, Airline.carrier_name)\
+	# 			.order_by(Airline.carrier_name)\
+	# 			.all()
+
+	airlines = Airline.query.order_by(Airline.carrier_name).all()
+
 	airlineArray = []
 
 	for airline in airlines:
@@ -169,13 +192,22 @@ def route_airlines():
 @app.route('/airline/<airline>/')
 def route_airline_origins(airline):
 
+	# SQLite syntax
+	# records = R.query\
+	# 			.filter_by(airline_id = airline)\
+	# 			.filter(R.departures > 1)\
+	# 			.filter(R.passengers > 1)\
+	# 			.join(Origin, R.origin)\
+	# 			.group_by(Origin.id)\
+	# 			.order_by(Origin.city_name)\
+	# 			.all()
+
 	records = R.query\
 				.filter_by(airline_id = airline)\
-				.filter(R.departures > 1)\
-				.filter(R.passengers > 1)\
-				.join(Origin, R.origin)\
-				.group_by(Origin.id)\
-				.order_by(Origin.city_name)\
+				.filter(R.departures >= 1)\
+				.filter(R.passengers >= 1)\
+				.distinct(R.origin_id)\
+				.join(R.origin)\
 				.all()
 
 	originArray = []
@@ -191,8 +223,18 @@ def route_airline_origins(airline):
 
 @app.route('/airline/<airline>/<origin>')
 def route_airline_origin_destination(airline, origin):
-	records = R.query.filter_by(airline_id = airline).filter_by(origin_id = origin).join(Destination, R.dest).group_by(Destination.id).order_by(Destination.city_name).all()
+	# SQLite syntax
+	# records = R.query.filter_by(airline_id = airline).filter_by(origin_id = origin).join(Destination, R.dest).group_by(Destination.id).order_by(Destination.city_name).all()
 	
+	records = R.query\
+				.filter_by(airline_id = airline)\
+				.filter_by(origin_id = origin)\
+				.filter(R.departures >= 1)\
+				.filter(R.passengers >= 1)\
+				.distinct(R.dest_id)\
+				.join(R.dest)\
+				.all()
+
 	destinationArray = []
 
 	for record in records:
@@ -206,8 +248,17 @@ def route_airline_origin_destination(airline, origin):
 
 @app.route('/airline/<airline>/<origin>/<destination>')
 def route_airline_origins_destination_years(airline, origin, destination):
-	records = R.query.filter_by(airline_id = airline).filter_by(origin_id = origin).filter_by(dest_id = destination).group_by(R.year).order_by(R.year).all()
+	# SQLite syntax
+	# records = R.query.filter_by(airline_id = airline).filter_by(origin_id = origin).filter_by(dest_id = destination).group_by(R.year).order_by(R.year).all()
 	
+	records = R.query\
+            .filter_by(airline_id = airline)\
+            .filter_by(origin_id = origin)\
+            .filter_by(dest_id = destination)\
+            .distinct(R.year)\
+            .order_by(R.year.desc())\
+            .all()
+
 	yearArray = []
 
 	for record in records:

@@ -3,19 +3,19 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask
 from flask_bootstrap import Bootstrap
-from config import Config
+from config import Config, DevelopmentConfig
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_misaka import Misaka
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
-app.config.from_object(Config)
+app.config.from_object(DevelopmentConfig)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 misaka = Misaka(app)
 
-app.config['SECRET_KEY'] = 'you-will-never-guess'
+# app.config['SECRET_KEY'] = 'you-will-never-guess'
 
 
 if not app.debug and not app.testing:

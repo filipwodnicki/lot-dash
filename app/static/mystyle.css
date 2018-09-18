@@ -8,13 +8,16 @@
 }*/
 
 select#airline {
-  width: 24em !important;
+  /*width: 24em !important;*/
+  width: 18em !important;
 }
 select#origin {
-  width: 14em !important;
+  /*width: 14em !important;*/
+  width: 18em !important;
 }
 select#destination {
-  width: 14em !important;
+  /*width: 14em !important;*/
+  width: 18em !important;
 }
 select#year {
   width: 6em !important;
