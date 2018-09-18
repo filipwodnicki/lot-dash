@@ -8,7 +8,7 @@ class Config(object):
 	DEBUG = False
 	TESTING = False
 	CSRF_ENABLED = True
-	LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
+	# LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
 
 	#Database
 	SECRET_KEY = os.environ.get('SECRET_KEY') or 'nigdy-nie-zgadniesz'
@@ -34,6 +34,7 @@ class StagingConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+    LOG_TO_STDOUT = False
     SQLALCHEMY_DATABASE_URI = "postgresql://localhost/lotdash_dev"
 
 
